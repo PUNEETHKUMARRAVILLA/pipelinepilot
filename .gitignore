@@ -1,0 +1,11 @@
+.env
+.venv/
+__pycache__/
+*.pyc
+data/
+logs/
+.pytest_cache/
+.DS_Store
+
+# Project guide (reference material, not code)
+Agentic Data Engineering Project.*
