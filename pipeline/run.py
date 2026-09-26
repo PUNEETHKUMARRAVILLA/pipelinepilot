@@ -2,8 +2,8 @@
 
 Run:  python -m pipeline.run
 On failure it records the run in pipeline_runs, writes logs/run_<id>.log and
-logs/last_failure.json (the event the agent will investigate), and exits with code 1.
-In week 3 Airflow will call these same steps and fire a webhook instead.
+logs/last_failure.json (the event the agent will investigate), sends that event to the
+PipelinePilot web server (app/webhook.py) if it is running, and exits with code 1.
 """
 import json
 import logging
@@ -12,8 +12,9 @@ import uuid
 from datetime import datetime
 
 import duckdb
+import requests
 
-from pipeline.config import DB_PATH, LAST_FAILURE, LOG_DIR, PIPELINE_NAME, RAW_FILE
+from pipeline.config import AGENT_WEBHOOK_URL, DB_PATH, LAST_FAILURE, LOG_DIR, PIPELINE_NAME, RAW_FILE
 
 
 class DataQualityError(Exception):
@@ -111,6 +112,18 @@ def step_mart(con, log):
     """)
 
 
+def notify_agent(event: dict) -> None:
+    """Hand the failure to PipelinePilot. Never raises: alerting must not break the pipeline."""
+    try:
+        resp = requests.post(AGENT_WEBHOOK_URL, json=event, timeout=5)
+        resp.raise_for_status()
+        print("PipelinePilot is investigating. The report will appear in Slack.")
+    except requests.RequestException as e:
+        print(f"Could not reach PipelinePilot ({type(e).__name__}). Start it with:\n"
+              "  uvicorn app.webhook:app --port 8000\n"
+              "or investigate by hand:  python -m agent.investigate")
+
+
 def main() -> int:
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:4]
     log = setup_logger(run_id)
@@ -132,7 +145,7 @@ def main() -> int:
         LAST_FAILURE.write_text(json.dumps(event, indent=2))
         con.close()
         print(f"\nRun {run_id} FAILED at step '{step}'. Event written to {LAST_FAILURE.name}.")
-        print("Next: python -m agent.investigate")
+        notify_agent(event)
         return 1
 
     con.execute("INSERT INTO pipeline_runs VALUES (?, ?, ?, ?, 'success', NULL, NULL, ?)",

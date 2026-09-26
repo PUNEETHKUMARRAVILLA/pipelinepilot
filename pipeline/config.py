@@ -13,6 +13,8 @@ LAST_FAILURE = LOG_DIR / "last_failure.json"
 INJECTED = LOG_DIR / "injected_failure.json"
 
 PIPELINE_NAME = "taxi_daily"
+# Where a failed run reports itself (app/webhook.py). Airflow in Docker will use host.docker.internal.
+AGENT_WEBHOOK_URL = "http://localhost:8000/incident"
 
 for d in (DATA_DIR, RAW_DIR, LOG_DIR):
     d.mkdir(parents=True, exist_ok=True)
