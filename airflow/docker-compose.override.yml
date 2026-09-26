@@ -1,0 +1,15 @@
+# Share the whole pipelinepilot folder (pipeline code, data/, logs/) with the Airflow containers,
+# so Airflow runs the same code on the same warehouse file the agent investigates.
+services:
+  scheduler:
+    volumes:
+      - ..:/usr/local/airflow/pipelinepilot
+  dag-processor:
+    volumes:
+      - ..:/usr/local/airflow/pipelinepilot
+  triggerer:
+    volumes:
+      - ..:/usr/local/airflow/pipelinepilot
+  api-server:
+    volumes:
+      - ..:/usr/local/airflow/pipelinepilot

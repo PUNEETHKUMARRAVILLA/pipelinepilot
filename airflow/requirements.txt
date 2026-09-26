@@ -1,0 +1,3 @@
+# Same versions as the project's .venv, so both sides can open the same DuckDB file
+duckdb==1.5.5
+requests

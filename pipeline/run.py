@@ -23,6 +23,8 @@ class DataQualityError(Exception):
 
 def setup_logger(run_id: str) -> logging.Logger:
     log = logging.getLogger(run_id)
+    if log.handlers:  # already set up in this process (Airflow can call this twice)
+        return log
     log.setLevel(logging.INFO)
     fmt = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
     fh = logging.FileHandler(LOG_DIR / f"run_{run_id}.log")
@@ -112,6 +114,27 @@ def step_mart(con, log):
     """)
 
 
+def record_failure(run_id: str, started: datetime, step: str, error: str, row_count, log) -> dict:
+    """Log the failure, store it in pipeline_runs, write last_failure.json and return the event."""
+    log.error("step %s FAILED: %s", step, error)
+    with duckdb.connect(str(DB_PATH)) as con:
+        init_db(con)
+        con.execute("INSERT INTO pipeline_runs VALUES (?, ?, ?, ?, 'failed', ?, ?, ?)",
+                    [run_id, PIPELINE_NAME, started, datetime.now(), step, error, row_count])
+    event = {"pipeline": PIPELINE_NAME, "run_id": run_id, "failed_step": step,
+             "error": error, "failed_at": datetime.now().isoformat()}
+    LAST_FAILURE.write_text(json.dumps(event, indent=2))
+    return event
+
+
+def record_success(run_id: str, started: datetime, row_count: int, log) -> None:
+    with duckdb.connect(str(DB_PATH)) as con:
+        con.execute("INSERT INTO pipeline_runs VALUES (?, ?, ?, ?, 'success', NULL, NULL, ?)",
+                    [run_id, PIPELINE_NAME, started, datetime.now(), row_count])
+    LAST_FAILURE.unlink(missing_ok=True)  # healthy again: nothing left to investigate
+    log.info("run %s succeeded", run_id)
+
+
 def notify_agent(event: dict) -> None:
     """Hand the failure to PipelinePilot. Never raises: alerting must not break the pipeline."""
     try:
@@ -137,22 +160,14 @@ def main() -> int:
         step = "quality_checks"; step_quality_checks(con, log, row_count)
         step = "mart"; step_mart(con, log)
     except Exception as e:  # noqa: BLE001 - we want every failure recorded
-        log.error("step %s FAILED: %s: %s", step, type(e).__name__, e)
-        con.execute("INSERT INTO pipeline_runs VALUES (?, ?, ?, ?, 'failed', ?, ?, ?)",
-                    [run_id, PIPELINE_NAME, started, datetime.now(), step, f"{type(e).__name__}: {e}", row_count])
-        event = {"pipeline": PIPELINE_NAME, "run_id": run_id, "failed_step": step,
-                 "error": f"{type(e).__name__}: {e}", "failed_at": datetime.now().isoformat()}
-        LAST_FAILURE.write_text(json.dumps(event, indent=2))
         con.close()
+        event = record_failure(run_id, started, step, f"{type(e).__name__}: {e}", row_count, log)
         print(f"\nRun {run_id} FAILED at step '{step}'. Event written to {LAST_FAILURE.name}.")
         notify_agent(event)
         return 1
 
-    con.execute("INSERT INTO pipeline_runs VALUES (?, ?, ?, ?, 'success', NULL, NULL, ?)",
-                [run_id, PIPELINE_NAME, started, datetime.now(), row_count])
     con.close()
-    LAST_FAILURE.unlink(missing_ok=True)  # healthy again: nothing left to investigate
-    log.info("run %s succeeded", run_id)
+    record_success(run_id, started, row_count, log)
     return 0
 
 
