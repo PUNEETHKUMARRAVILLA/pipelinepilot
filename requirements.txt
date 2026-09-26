@@ -4,10 +4,10 @@ anthropic>=0.40
 python-dotenv>=1.0
 pytest>=8.0
 
-# Week 3 (uncomment when you get there)
-# fastapi
-# uvicorn
-# requests
+# Week 3
+fastapi
+uvicorn
+requests
 
 # Week 4
 # streamlit

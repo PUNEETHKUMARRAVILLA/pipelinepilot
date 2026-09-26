@@ -11,7 +11,7 @@ import random
 import sys
 from datetime import datetime, timedelta
 
-from pipeline.config import INJECTED, RAW_FILE
+from pipeline.config import INJECTED, LAST_FAILURE, RAW_FILE
 from pipeline.generate_data import generate
 
 SCENARIOS = {
@@ -77,6 +77,7 @@ if __name__ == "__main__":
     if sys.argv[1] == "reset":
         generate()
         INJECTED.unlink(missing_ok=True)
+        LAST_FAILURE.unlink(missing_ok=True)  # the old failure no longer matches the data
         print("Raw data reset to clean.")
     else:
         inject(sys.argv[1])
