@@ -6,12 +6,14 @@ Guardrails live HERE, in code, not only in the prompt:
 - results are capped at MAX_ROWS rows
 """
 import csv
+import inspect
 import json
 import re
 from datetime import datetime
 
 import duckdb
 
+from pipeline import run as pipeline_run
 from pipeline.config import DB_PATH, LOG_DIR, RAW_FILE
 
 MAX_ROWS = 100
@@ -128,6 +130,21 @@ def run_sql(query: str) -> str:
         return _as_table([d[0] for d in cur.description], cur.fetchall())
 
 
+PIPELINE_STEPS = {
+    "extract": pipeline_run.step_extract,
+    "staging": pipeline_run.step_staging,
+    "quality_checks": pipeline_run.step_quality_checks,
+    "mart": pipeline_run.step_mart,
+}
+
+
+def get_pipeline_code(step: str) -> str:
+    """Source code of one pipeline step, so the agent can see the real SQL it runs."""
+    if step not in PIPELINE_STEPS:
+        return f"Unknown step '{step}'. Choose from: {', '.join(PIPELINE_STEPS)}"
+    return inspect.getsource(PIPELINE_STEPS[step])
+
+
 # ---------------- what the model sees ----------------
 
 TOOLS = {
@@ -138,6 +155,7 @@ TOOLS = {
     "check_source_file": check_source_file,
     "profile_table": profile_table,
     "run_sql": run_sql,
+    "get_pipeline_code": get_pipeline_code,
 }
 
 TOOL_SCHEMAS = [
@@ -164,4 +182,9 @@ TOOL_SCHEMAS = [
     {"name": "run_sql",
      "description": f"Run ONE read-only SELECT/WITH query on DuckDB. Max {MAX_ROWS} rows returned.",
      "input_schema": {"type": "object", "properties": {"query": {"type": "string"}}, "required": ["query"]}},
+    {"name": "get_pipeline_code",
+     "description": "Source code (including the SQL) of one pipeline step, e.g. staging. "
+                    "Use it to see which columns the step expects instead of guessing.",
+     "input_schema": {"type": "object", "properties": {
+         "step": {"type": "string", "enum": list(PIPELINE_STEPS)}}, "required": ["step"]}},
 ]

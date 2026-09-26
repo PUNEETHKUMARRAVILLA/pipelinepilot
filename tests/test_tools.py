@@ -1,7 +1,7 @@
 """Run:  pytest -q"""
 import pytest
 
-from agent.tools import validate_sql
+from agent.tools import get_pipeline_code, validate_sql
 
 
 @pytest.mark.parametrize("q", [
@@ -23,3 +23,11 @@ def test_allows_read_only(q):
 def test_blocks_writes(q):
     with pytest.raises(ValueError):
         validate_sql(q)
+
+
+def test_pipeline_code_shows_staging_sql():
+    assert "fare_amount" in get_pipeline_code("staging")
+
+
+def test_pipeline_code_rejects_unknown_step():
+    assert get_pipeline_code("../../.env").startswith("Unknown step")
