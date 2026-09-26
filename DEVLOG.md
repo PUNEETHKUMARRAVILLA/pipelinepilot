@@ -32,3 +32,10 @@ Write 2-3 lines after each session: what you built, what broke, what you learned
   correct Slack report in 21.6s with no human step. Week 3 "done when" met.
 - Gotchas: containers run in UTC (set TZ so pipeline_runs order stays right); Airflow run ids contain
   ":" and "+", which the agent's tools reject, so they are sanitised to [A-Za-z0-9_].
+
+## Day 2, evening (2026-09-26): week 4 eval
+- evals/run_evals.py: fresh warehouse per run, real agent, Opus 5 judge on the ROOT CAUSE line vs the
+  injected truth; records time, tool calls, tokens, confidence, and cut-off runs separately.
+- Checked the judge first on known answers (6/6, incl. rejecting my Day-1 wrong diagnosis).
+- Pilot: 6/6 correct, ~$0.03 per incident. Skipped the full 30-run pass to keep costs down.
+- Lesson: test the grader before trusting the score; a judge only measures what you ask it to.

@@ -9,3 +9,6 @@ logs/
 
 # Project guide (reference material, not code)
 Agentic Data Engineering Project.*
+
+# Eval transcripts (bulky, regenerate with evals/run_evals.py)
+evals/runs/*/traces/

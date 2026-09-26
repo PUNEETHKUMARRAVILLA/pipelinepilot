@@ -67,6 +67,7 @@ def investigate(event: dict) -> dict:
                 print(f"\n[step {step}] thinking: {block.text.strip()}")
 
         trace["stop_reason"] = resp.stop_reason
+        trace["served_model"] = resp.model  # what actually answered, not what we asked for
         if resp.stop_reason == "end_turn":
             trace["report"] = "".join(b.text for b in resp.content if b.type == "text")
             break

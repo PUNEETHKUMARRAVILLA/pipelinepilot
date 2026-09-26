@@ -57,9 +57,21 @@ evals/     week 4: accuracy / speed / cost
 
 ## Results
 
-| Scenario | Correct (of 5) | Avg seconds | Avg tool calls |
-|---|---|---|---|
-| _fill in after week 4_ | | | |
+Pilot eval: 1 run per failure type, agent `claude-sonnet-5`, graded by a `claude-opus-5` judge
+that compares the agent's ROOT CAUSE line with the injected truth (`python -m evals.run_evals --reps 1`).
+
+| Scenario | Correct | Seconds | Tool calls | Cost |
+|---|---|---|---|---|
+| schema_drift | 1/1 | 11.2 | 4 | $0.024 |
+| null_spike | 1/1 | 13.5 | 7 | $0.032 |
+| duplicates | 1/1 | 19.9 | 8 | $0.046 |
+| stale_data | 1/1 | 14.8 | 5 | $0.031 |
+| type_change | 1/1 | 9.5 | 4 | $0.022 |
+| volume_drop | 1/1 | 11.8 | 3 | $0.021 |
+
+**6/6 correct, 9.5-19.9 s per diagnosis, about $0.03 per incident.** Six runs is a small sample
+(95% CI 61-100%); `--reps 5` runs the full 30 (about $1). The judge only grades the root cause,
+not whether each evidence bullet is true.
 
 ## Using real data later
 

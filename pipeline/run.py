@@ -147,7 +147,7 @@ def notify_agent(event: dict) -> None:
               "or investigate by hand:  python -m agent.investigate")
 
 
-def main() -> int:
+def main(notify: bool = True) -> int:
     run_id = datetime.now().strftime("%Y%m%d_%H%M%S_") + uuid.uuid4().hex[:4]
     log = setup_logger(run_id)
     started = datetime.now()
@@ -163,7 +163,8 @@ def main() -> int:
         con.close()
         event = record_failure(run_id, started, step, f"{type(e).__name__}: {e}", row_count, log)
         print(f"\nRun {run_id} FAILED at step '{step}'. Event written to {LAST_FAILURE.name}.")
-        notify_agent(event)
+        if notify:
+            notify_agent(event)
         return 1
 
     con.close()
