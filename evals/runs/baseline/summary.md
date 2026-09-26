@@ -1,12 +1,12 @@
 | Scenario | Correct | Avg seconds | Avg tool calls | Avg cost | High-confidence but wrong |
 |---|---|---|---|---|---|
-| schema_drift | 1/1 | 11.2 | 4.0 | $0.024 | 0 |
-| null_spike | 1/1 | 13.5 | 7.0 | $0.032 | 0 |
-| duplicates | 1/1 | 19.9 | 8.0 | $0.046 | 0 |
-| stale_data | 1/1 | 14.8 | 5.0 | $0.031 | 0 |
-| type_change | 1/1 | 9.5 | 4.0 | $0.022 | 0 |
-| volume_drop | 1/1 | 11.8 | 3.0 | $0.021 | 0 |
+| schema_drift | 5/5 | 11.4 | 4.2 | $0.023 | 0 |
+| null_spike | 5/5 | 13.2 | 6.2 | $0.029 | 0 |
+| duplicates | 5/5 | 21.6 | 8.2 | $0.053 | 0 |
+| stale_data | 5/5 | 17.6 | 5.6 | $0.037 | 0 |
+| type_change | 5/5 | 11.3 | 4.8 | $0.025 | 0 |
+| volume_drop | 5/5 | 10.6 | 3.4 | $0.021 | 0 |
 
-**Overall: 6/6 correct (100%, 95% CI 61%-100%)** on claude-sonnet-5, judged by claude-opus-5.
-Agent cost $0.18 total ($0.029 per incident); judge cost $0.03.
+**Overall: 30/30 correct (100%, 95% CI 89%-100%)** on claude-sonnet-5, judged by claude-opus-5.
+Agent cost $0.94 total ($0.031 per incident); judge cost $0.18.
 Runs without a usable report: 0; harness errors (not scored): 0.

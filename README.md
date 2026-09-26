@@ -5,8 +5,8 @@ it the way an on-call engineer would (reading logs, checking the source file, qu
 and posts the root cause, the evidence and a suggested fix to Slack, usually within 10-20 seconds.
 It can only read; any fix waits for a human to approve.
 
-In a pilot eval it found the correct root cause for **6 of 6** injected failure types,
-in **9.5-19.9 s**, at about **$0.03 per incident**.
+In an eval of 30 runs (6 failure types × 5) it found the correct root cause **30 out of 30** times,
+in a median **13.4 s**, at about **$0.03 per incident**.
 
 ![Every step the agent took on one incident](docs/images/incident-trace.png)
 
@@ -85,21 +85,26 @@ flowchart LR
 
 ## Results
 
-Pilot eval ([evals/run_evals.py](evals/run_evals.py)): each run starts from a fresh warehouse, injects
+Eval ([evals/run_evals.py](evals/run_evals.py)): each run starts from a fresh warehouse, injects
 one failure, lets the real agent investigate, and has a separate Claude Opus 5 judge compare the agent's
-ROOT CAUSE line with the injected truth. The agent runs on Claude Sonnet 5.
+ROOT CAUSE line with the injected truth. The agent runs on Claude Sonnet 5. 5 runs per failure type.
 
-| Failure injected | Correct | Seconds | Tool calls | Cost |
+| Failure injected | Correct | Avg seconds | Avg tool calls | Avg cost |
 |---|---|---|---|---|
-| Column renamed upstream (`schema_drift`) | 1/1 | 11.2 | 4 | $0.024 |
-| 40% of a key column empty (`null_spike`) | 1/1 | 13.5 | 7 | $0.032 |
-| Same batch delivered twice (`duplicates`) | 1/1 | 19.9 | 8 | $0.046 |
-| 3-day-old extract (`stale_data`) | 1/1 | 14.8 | 5 | $0.031 |
-| Number arrives as `$7.30` text (`type_change`) | 1/1 | 9.5 | 4 | $0.022 |
-| Only 3% of rows arrived (`volume_drop`) | 1/1 | 11.8 | 3 | $0.021 |
+| Column renamed upstream (`schema_drift`) | 5/5 | 11.4 | 4.2 | $0.023 |
+| 40% of a key column empty (`null_spike`) | 5/5 | 13.2 | 6.2 | $0.029 |
+| Same batch delivered twice (`duplicates`) | 5/5 | 21.6 | 8.2 | $0.053 |
+| 3-day-old extract (`stale_data`) | 5/5 | 17.6 | 5.6 | $0.037 |
+| Number arrives as `$7.30` text (`type_change`) | 5/5 | 11.3 | 4.8 | $0.025 |
+| Only 3% of rows arrived (`volume_drop`) | 5/5 | 10.6 | 3.4 | $0.021 |
 
-Limits: 6 runs is a small sample (95% CI 61-100%); `--reps 5` runs the full 30 (about $1).
-The judge grades the root cause, not whether every evidence bullet is true.
+**30/30 correct** (95% CI 89-100%), 7.8-29.8 s per diagnosis (median 13.4), 3-10 tool calls,
+$0.031 per incident on average. No runs were cut off or errored.
+
+Limits: the cases are synthetic and the agent now aces all six, so the eval can no longer tell a
+better version from a worse one; the next step is harder cases. The agent said "high" confidence
+every time, so these runs say nothing about whether its confidence is calibrated. The judge grades
+the root cause, not whether every evidence bullet is true.
 
 ![Eval results in the trace viewer](docs/images/eval-results.png)
 
@@ -148,7 +153,7 @@ python -m pipeline.break_it duplicates; python -m pipeline.run   # terminal 2
 `cd airflow && astro dev start`, trigger `taxi_daily` in the UI, break the data, and trigger it again.
 
 **Trace viewer:** `streamlit run app/trace_viewer.py`.
-**Eval:** `python -m evals.run_evals --reps 1` (about $0.25) or `--reps 5`.
+**Eval:** `python -m evals.run_evals --reps 1` (about $0.25) or `--reps 5` (about $1.10).
 
 ## Project layout
 
@@ -168,7 +173,7 @@ Slack incoming webhooks · Streamlit · pytest
 
 ## Next steps
 
-- Run the full 30-run eval and add harder cases (other columns, two failures at once).
+- Add harder eval cases (other columns, two failures at once), since the current six are saturated.
 - Grade the evidence bullets, not just the root cause.
 - Swap the generated data for real NYC TLC taxi trips.
 - Let the agent open a pull request with the fix, still behind human approval.

@@ -39,3 +39,6 @@ Write 2-3 lines after each session: what you built, what broke, what you learned
 - Checked the judge first on known answers (6/6, incl. rejecting my Day-1 wrong diagnosis).
 - Pilot: 6/6 correct, ~$0.03 per incident. Skipped the full 30-run pass to keep costs down.
 - Lesson: test the grader before trusting the score; a judge only measures what you ask it to.
+- Full eval later the same day: 30/30 correct, median 13.4 s, $0.031 per incident (+ $0.006 judge).
+  The six cases are now saturated, and every answer said "high" confidence, so the next useful
+  work is harder cases, not more reps of these.
