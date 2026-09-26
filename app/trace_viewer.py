@@ -39,7 +39,7 @@ def show_incident(trace: dict) -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Tool calls", len(trace["steps"]))
     c2.metric("Seconds", trace.get("seconds", "-"))
-    c3.metric("Tokens (in / out)", f"{usage['input_tokens']:,} / {usage['output_tokens']:,}")
+    c3.metric("Tokens (in / out)", f"{usage['input_tokens'] / 1000:.1f}k / {usage['output_tokens'] / 1000:.1f}k")
     c4.metric("Cost", f"${cost(model, usage):.3f}")
 
     st.markdown("#### What the agent did")
