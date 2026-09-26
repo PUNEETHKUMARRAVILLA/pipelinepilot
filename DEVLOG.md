@@ -13,3 +13,9 @@ Write 2-3 lines after each session: what you built, what broke, what you learned
 - Re-ran schema_drift: correct root cause (upstream renamed `fare_amount` -> `fare`) and correct fix,
   in 5 tool calls / 14.8s (was 6 calls / 27.1s and wrong).
 - Lesson: fix a wrong agent by giving it the missing information, not by scolding it in the prompt.
+- Bugs found by accident: agent investigated a stale last_failure.json after a healthy run (made up a
+  "duplicate column" cause), and printed an EMPTY report because thinking used up max_tokens=2000.
+  Fixed: healthy run clears the failure file; max_tokens 16000; non-end_turn stops are reported, not blank.
+- Manual check of all 6 scenarios: 6/6 correct root causes. But volume_drop's evidence cited two FAILED
+  runs as the "normal 5000-row baseline" (one had 5800 rows). Right answer, wrong supporting fact.
+- Lesson: grade the evidence, not just the conclusion.
