@@ -19,3 +19,11 @@ Write 2-3 lines after each session: what you built, what broke, what you learned
 - Manual check of all 6 scenarios: 6/6 correct root causes. But volume_drop's evidence cited two FAILED
   runs as the "normal 5000-row baseline" (one had 5800 rows). Right answer, wrong supporting fact.
 - Lesson: grade the evidence, not just the conclusion.
+
+## Day 2, afternoon (2026-09-26)
+- Week 3 part 1: app/slack.py posts reports to Slack; app/webhook.py (FastAPI) takes POST /incident,
+  replies 202 at once and runs the agent in a background task; run.py sends its failure event there.
+- Now one command (break + run) ends with a correct report in #incidents, ~10-20s, no human step.
+- Guardrails: the webhook rejects malformed events (422) and run_ids like "../x" (used in a file name);
+  alerting has a 5s timeout and can never crash the pipeline.
+- Lesson: don't change the data while the agent is still investigating. Evidence has to stay put.

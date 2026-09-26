@@ -50,8 +50,8 @@ evals/     week 4: accuracy / speed / cost
 
 ## Roadmap
 
-- [ ] Week 1: pipeline runs clean and breaks on command
-- [ ] Week 2: agent diagnoses all 6 scenarios from the CLI
+- [x] Week 1: pipeline runs clean and breaks on command
+- [x] Week 2: agent diagnoses all 6 scenarios from the CLI
 - [ ] Week 3: Airflow failure → webhook → Slack report, no human action
 - [ ] Week 4: evals, Streamlit trace viewer, demo video, results table below
 
