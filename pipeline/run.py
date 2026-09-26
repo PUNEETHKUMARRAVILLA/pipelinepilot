@@ -138,6 +138,7 @@ def main() -> int:
     con.execute("INSERT INTO pipeline_runs VALUES (?, ?, ?, ?, 'success', NULL, NULL, ?)",
                 [run_id, PIPELINE_NAME, started, datetime.now(), row_count])
     con.close()
+    LAST_FAILURE.unlink(missing_ok=True)  # healthy again: nothing left to investigate
     log.info("run %s succeeded", run_id)
     return 0
 

@@ -54,7 +54,9 @@ def investigate(event: dict) -> dict:
     started = time.time()
 
     for step in range(1, MAX_STEPS + 1):
-        resp = client.messages.create(model=MODEL, max_tokens=2000, system=SYSTEM_PROMPT,
+        # The model thinks before answering and thinking counts toward max_tokens,
+        # so leave plenty of room or the report gets cut off before it is written.
+        resp = client.messages.create(model=MODEL, max_tokens=16000, system=SYSTEM_PROMPT,
                                       tools=TOOL_SCHEMAS, messages=messages)
         usage["input_tokens"] += resp.usage.input_tokens
         usage["output_tokens"] += resp.usage.output_tokens
@@ -64,8 +66,12 @@ def investigate(event: dict) -> dict:
             if block.type == "text" and block.text.strip() and resp.stop_reason == "tool_use":
                 print(f"\n[step {step}] thinking: {block.text.strip()}")
 
-        if resp.stop_reason != "tool_use":
+        trace["stop_reason"] = resp.stop_reason
+        if resp.stop_reason == "end_turn":
             trace["report"] = "".join(b.text for b in resp.content if b.type == "text")
+            break
+        if resp.stop_reason != "tool_use":  # max_tokens, refusal, ...: no usable report
+            trace["report"] = f"Stopped early (stop_reason={resp.stop_reason}) without a report."
             break
 
         results = []
