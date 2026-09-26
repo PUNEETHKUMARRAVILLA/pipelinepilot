@@ -27,3 +27,8 @@ Write 2-3 lines after each session: what you built, what broke, what you learned
 - Guardrails: the webhook rejects malformed events (422) and run_ids like "../x" (used in a file name);
   alerting has a 5s timeout and can never crash the pipeline.
 - Lesson: don't change the data while the agent is still investigating. Evidence has to stay put.
+- Week 3 part 2: Airflow 3 (Astro CLI, Docker) runs taxi_daily as 4 tasks. on_failure_callback records the
+  failure and POSTs to host.docker.internal:8000. Duplicates run: quality_checks red, mart skipped,
+  correct Slack report in 21.6s with no human step. Week 3 "done when" met.
+- Gotchas: containers run in UTC (set TZ so pipeline_runs order stays right); Airflow run ids contain
+  ":" and "+", which the agent's tools reject, so they are sanitised to [A-Za-z0-9_].
