@@ -42,3 +42,9 @@ Write 2-3 lines after each session: what you built, what broke, what you learned
 - Full eval later the same day: 30/30 correct, median 13.4 s, $0.031 per incident (+ $0.006 judge).
   The six cases are now saturated, and every answer said "high" confidence, so the next useful
   work is harder cases, not more reps of these.
+
+## Day 4 (2026-09-28): repo cleanup
+- Rewrote commit history before sharing: author email -> GitHub noreply address, removed co-author
+  trailers, then force-pushed with --force-with-lease (safe because nobody else had pulled).
+- Lesson: history rewrites change every commit id, and GitHub's cached pages (like the contributor
+  box) only refresh on the next push.
